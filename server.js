@@ -1,12 +1,12 @@
 const express = require('express');
 const path = require('path');
-
+const fs = require("fs")
 const PORT = process.env.PORT || 3001;
 const uuid = require('./helpers/uuid');
 const { readFromFile, readAndAppend, writeToFile } = require('./helpers/fsUtils');
 const app = express();
-const notesdb = require('./db/notes.json');
-
+let notesdb = require('./db/notes.json');
+console.log(notesdb);
 
 // Middleware for parsing JSON and urlencoded form data
 app.use(express.json());
@@ -40,8 +40,9 @@ app.post('/api/notes', (req, res) => {
         text,
         id: uuid(),
         };
-
-        readAndAppend(newNote, './db/notes.json');
+        notesdb.push(newNote)
+        //readAndAppend(newNote, './db/notes.json');
+        fs.writeFileSync("./db/notes.json", JSON.stringify(notesdb))
         res.json(`Note added successfully`);
     } else {
         res.error('Error in adding note');
@@ -51,10 +52,23 @@ app.post('/api/notes', (req, res) => {
 // This API route is a DELETE Route for a note
 app.delete('/api/notes/:id', (req, res) => {
     const id = req.params.id;
-    const requestNote = notesdb.find(el => el.id === id);
-    const index = notesdb.indexOf(requestNote);
-    notesdb.splice(index, 1);
-    writeToFile('./db/notes.json', JSON.stringify(notesdb));
+    console.log(id)
+    console.log(notesdb)
+    // const requestNote = notesdb.filter(el => {
+    //   console.log(el);
+    //   el.id != id});
+  let keepArray = []
+  for (let i = 0; i < notesdb.length; i++){
+    if(notesdb[i].id != id){
+      keepArray.push(notesdb[i])
+    }
+  }
+    notesdb = keepArray
+    // console.log(requestNote)
+    // const index = notesdb.indexOf(requestNote);
+    // console.log(index)
+    // notesdb.splice(index, 1);
+    writeToFile('./db/notes.json', notesdb);
     res.send("DELETE Request Called")
 
 })

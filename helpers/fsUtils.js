@@ -1,3 +1,4 @@
+const data = require("../db/notes.json");
 const fs = require('fs');
 const util = require('util');
 
